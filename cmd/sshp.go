@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -149,6 +151,20 @@ func selecthost(hosts []Host) (Host, error) {
 }
 
 func connecthost(host Host) error {
+	fullhost := fmt.Sprintf("%s@%s", host.User, host.Host)
+	cmd := exec.Command("ssh", "-p", strconv.Itoa(host.Port), fullhost)
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+	err := cmd.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = cmd.Wait()
+	return nil
+}
+
+func authhost(host Host) error {
 	hostname := host.Host
 	port := host.Port
 	user := host.User
