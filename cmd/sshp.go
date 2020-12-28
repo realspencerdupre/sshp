@@ -14,7 +14,6 @@ import (
 
 	"github.com/manifoldco/promptui"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/oleiade/reflections"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -50,25 +49,47 @@ func addhost() error {
 		Prompt:  "{{ . }} ",
 		Success: "{{ . | bold }} ",
 	}
-	labels := map[string]string{
-		"Host":  "Hostname",
-		"User":  "User",
-		"Desc":  "Host description",
-		"Owner": "Owner name",
-		"Port":  "Port (22)",
+
+	promptUser := promptui.Prompt{
+		Label:     "User",
+		Templates: templates,
 	}
-	for prop, desc := range labels {
-		prompt := promptui.Prompt{
-			Label:     desc,
-			Templates: templates,
-		}
-		val, err := prompt.Run()
-		if err != nil {
-			return err
-		}
-		_ = reflections.SetField(&newhost, prop, val)
+	user, err := promptUser.Run()
+	if err != nil {
+		return err
 	}
-	newhost.Port = 22
+	newhost.User = user
+
+	promptHost := promptui.Prompt{
+		Label:     "Host (or IP)",
+		Templates: templates,
+	}
+	host, err := promptHost.Run()
+	if err != nil {
+		return err
+	}
+	newhost.Host = host
+
+	promptOwner := promptui.Prompt{
+		Label:     "Owner",
+		Templates: templates,
+	}
+	owner, err := promptOwner.Run()
+	if err != nil {
+		return err
+	}
+	newhost.Owner = owner
+
+	promptDesc := promptui.Prompt{
+		Label:     "Description",
+		Templates: templates,
+	}
+	desc, err := promptDesc.Run()
+	if err != nil {
+		return err
+	}
+	newhost.Desc = desc
+
 	prompt := promptui.Prompt{
 		Label:     "Password",
 		Templates: templates,
@@ -79,6 +100,22 @@ func addhost() error {
 		return err
 	}
 	newhost.Password = password
+
+	promptPort := promptui.Prompt{
+		Label:     "Port (22)",
+		Templates: templates,
+	}
+	port, err := promptPort.Run()
+	if err != nil {
+		return err
+	}
+	if port == "" {
+		port = "22"
+	}
+	newhost.Port, err = strconv.Atoi(port)
+	if err != nil {
+		return err
+	}
 
 	hosts, err := gethosts(HostsFile)
 	if err != nil {
@@ -114,6 +151,25 @@ func rmhost() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	templates := &promptui.PromptTemplates{
+		Prompt:  "{{ . }} ",
+		Success: "{{ . | bold }} ",
+	}
+	promptconfirm := promptui.Prompt{
+		Label:     "Are you sure? (y)",
+		Templates: templates,
+	}
+	confirm, err := promptconfirm.Run()
+	if err != nil {
+		return err
+	}
+	confirm = strings.ToLower(confirm)
+	if !(strings.HasPrefix(confirm, "y")) {
+		fmt.Println("Do nothing")
+		return nil
+	}
+
 	var newhosts []Host
 	for i := range hosts {
 		if hosts[i] != selectedhost {
