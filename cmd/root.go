@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -42,9 +44,14 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		err = connecthost(host)
+		fullhost := fmt.Sprintf("%s@%s", host.User, host.Host)
+		session := exec.Command("ssh", "-p", strconv.Itoa(host.Port), fullhost)
+		session.Stdout = os.Stdout
+		session.Stdin = os.Stdin
+		session.Stderr = os.Stderr
+		err = session.Run()
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 	},
 }

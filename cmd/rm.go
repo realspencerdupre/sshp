@@ -16,8 +16,11 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +35,41 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := rmhost()
+		hosts, err := gethosts(HostsFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		selectedhost, err := selecthost(hosts)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		templates := &promptui.PromptTemplates{
+			Prompt:  "{{ . }} ",
+			Success: "{{ . | bold }} ",
+		}
+		promptconfirm := promptui.Prompt{
+			Label:     "Are you sure? (y)",
+			Templates: templates,
+		}
+		confirm, err := promptconfirm.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+		confirm = strings.ToLower(confirm)
+		if !(strings.HasPrefix(confirm, "y")) {
+			fmt.Println("Do nothing")
+			log.Fatal(err)
+		}
+
+		var newhosts []Host
+		for i := range hosts {
+			if hosts[i] != selectedhost {
+				newhosts = append(newhosts, hosts[i])
+			}
+		}
+		fmt.Println("Removing", selectedhost.Desc)
+		err = writehosts(newhosts)
 		if err != nil {
 			log.Fatal(err)
 		}
