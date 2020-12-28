@@ -89,6 +89,7 @@ func addhost() error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	authhost(newhost)
 	return nil
 }
 
@@ -156,11 +157,10 @@ func connecthost(host Host) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
-	err := cmd.Start()
+	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = cmd.Wait()
 	return nil
 }
 
@@ -169,7 +169,14 @@ func authhost(host Host) error {
 	port := host.Port
 	user := host.User
 	pass := host.Password
-	cmd := "ls"
+
+	var pubkeyfile = filepath.Join(home, ".ssh", "id_rsa.pub")
+	pubkey, err := ioutil.ReadFile(pubkeyfile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmd := fmt.Sprintf("echo '%s' >> $HOME/.ssh/authorized_keys", pubkey)
 
 	// ssh client config
 	config := &ssh.ClientConfig{
