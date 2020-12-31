@@ -18,7 +18,19 @@ go build
 ```
 
 ## Usage
+```
+./sshp add
+```
+Launches the add host form. Sshp will ask you for several pieces of information, then save the host in the config.
+
 
 ```
 ./sshp
+```
+Will launch a prompt to pick a host, like this:
+```
+Select Day
+  > MyWebsite (Me)
+    ClientProject (Client1)
+
 ```
