@@ -21,7 +21,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -35,13 +34,16 @@ var addCmd = &cobra.Command{
 	Long:  `Add a new host to sshp.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		newhost := Host{}
+		newhost.Port = 22
+		newhost.Tor = false
+
 		templates := &promptui.PromptTemplates{
 			Prompt:  "{{ . }} ",
 			Success: "{{ . | bold }} ",
 		}
 
 		promptUser := promptui.Prompt{
-			Label:     "User",
+			Label:     "Username",
 			Templates: templates,
 		}
 		user, err := promptUser.Run()
@@ -90,37 +92,23 @@ var addCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		newhost.Password = password
-
-		promptPort := promptui.Prompt{
-			Label:     "Port (22)",
-			Templates: templates,
-		}
-		port, err := promptPort.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
-		if port == "" {
-			port = "22"
-		}
-		newhost.Port, err = strconv.Atoi(port)
-		if err != nil {
-			log.Fatal(err)
-		}
+		newhost.Port = portFlag
 
 		hosts, err := gethosts(HostsFile)
 		if err != nil {
 			log.Fatal(err)
 		}
+		authhost(newhost)
+		newhost.Password = ""
 		hosts = append(hosts, newhost)
 		err = writehosts(hosts)
 		if err != nil {
 			log.Fatal(err)
 		}
-		authhost(newhost)
 	},
 }
 
-func authhost(host Host) error {
+func authhost(host Host) {
 	hostname := host.Host
 	port := host.Port
 	user := host.User
@@ -132,6 +120,7 @@ func authhost(host Host) error {
 		log.Fatal(err)
 	}
 
+	// The bash command we will run on the remote machine, to copy our key
 	cmd := fmt.Sprintf("echo '%s' >> $HOME/.ssh/authorized_keys", pubkey)
 
 	// ssh client config
@@ -146,7 +135,12 @@ func authhost(host Host) error {
 
 	// connect
 	fullhost := fmt.Sprintf("%s:%d", hostname, port)
-	client, err := ssh.Dial("tcp", fullhost, config)
+	var client *ssh.Client
+	if torFlag := false; torFlag {
+		client, err = proxiedSSHClient("localhost:9050", fullhost, config)
+	} else {
+		client, err = ssh.Dial("tcp", fullhost, config)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -159,8 +153,7 @@ func authhost(host Host) error {
 	}
 	defer sess.Close()
 
-	// setup standard out and error
-	// uses writer interface
+	// connect to stdout and stderr
 	sess.Stdout = os.Stdout
 	sess.Stderr = os.Stderr
 
@@ -169,19 +162,15 @@ func authhost(host Host) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return nil
 }
+
+var portFlag int
+
+// var torFlag bool
 
 func init() {
 	rootCmd.AddCommand(addCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	addCmd.Flags().IntVarP(&portFlag, "port", "p", 22, "Port to use for SSH connection")
+	// addCmd.Flags().BoolVarP(&torFlag, "tor", "t", false, "Use tor when connecting to this host")
 }
