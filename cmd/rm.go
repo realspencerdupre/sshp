@@ -39,7 +39,7 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		selectedhost, err := selecthost(hosts)
+		selectedHostIndex, err := selecthost(hosts)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -64,11 +64,11 @@ to quickly create a Cobra application.`,
 
 		var newhosts []Host
 		for i := range hosts {
-			if hosts[i] != selectedhost {
+			if i != selectedHostIndex {
 				newhosts = append(newhosts, hosts[i])
 			}
 		}
-		fmt.Println("Removing", selectedhost.Desc)
+		fmt.Println("Removing", hosts[selectedHostIndex].Desc)
 		err = writehosts(newhosts)
 		if err != nil {
 			log.Fatal(err)

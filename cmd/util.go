@@ -11,6 +11,8 @@ import (
 
 	"github.com/manifoldco/promptui"
 	homedir "github.com/mitchellh/go-homedir"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/net/proxy"
 )
 
 type Host struct {
@@ -21,6 +23,7 @@ type Host struct {
 	Owner     string
 	Password  string
 	Port      int
+	Tor       bool
 }
 
 var home, _ = homedir.Dir()
@@ -51,7 +54,7 @@ func writehosts(hosts []Host) error {
 	return nil
 }
 
-func selecthost(hosts []Host) (Host, error) {
+func selecthost(hosts []Host) (int, error) {
 	templates := &promptui.SelectTemplates{
 		Label:    "{{ .UserHost }}?",
 		Active:   "> {{ .Desc | cyan }} ({{ .Owner }})",
@@ -68,8 +71,27 @@ func selecthost(hosts []Host) (Host, error) {
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return Host{}, err
+		return -1, err
 	}
 
-	return hosts[i], nil
+	return i, nil
+}
+
+func proxiedSSHClient(proxyAddress string, sshServerAddress string, sshConfig *ssh.ClientConfig) (*ssh.Client, error) {
+	dialer, err := proxy.SOCKS5("tcp", proxyAddress, nil, proxy.Direct)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := dialer.Dial("tcp", sshServerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	c, chans, reqs, err := ssh.NewClientConn(conn, sshServerAddress, sshConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return ssh.NewClient(c, chans, reqs), nil
 }

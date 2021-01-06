@@ -40,12 +40,21 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		host, err := selecthost(hosts)
+		hostIndex, err := selecthost(hosts)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		fullhost := fmt.Sprintf("%s@%s", host.User, host.Host)
-		command := []string{"ssh", "-p", strconv.Itoa(host.Port), fullhost}
+		fullhost := fmt.Sprintf(
+			"%s@%s",
+			hosts[hostIndex].User,
+			hosts[hostIndex].Host,
+		)
+		command := []string{
+			"ssh",
+			"-p",
+			strconv.Itoa(hosts[hostIndex].Port),
+			fullhost,
+		}
 
 		session := exec.Command(command[0], command[1:]...)
 		session.Stdout = os.Stdout

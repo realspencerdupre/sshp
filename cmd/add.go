@@ -27,6 +27,12 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+var (
+	portFlag     int
+	dontCopyFlag bool
+	// torFlag bool
+)
+
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
@@ -34,7 +40,7 @@ var addCmd = &cobra.Command{
 	Long:  `Add a new host to sshp.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		newhost := Host{}
-		newhost.Port = 22
+		newhost.Port = portFlag
 		newhost.Tor = false
 
 		templates := &promptui.PromptTemplates{
@@ -82,23 +88,24 @@ var addCmd = &cobra.Command{
 		}
 		newhost.Desc = desc
 
-		prompt := promptui.Prompt{
-			Label:     "Password",
-			Templates: templates,
-			Mask:      '*',
+		if !dontCopyFlag {
+			prompt := promptui.Prompt{
+				Label:     "Password",
+				Templates: templates,
+				Mask:      '*',
+			}
+			password, err := prompt.Run()
+			if err != nil {
+				log.Fatal(err)
+			}
+			newhost.Password = password
+			authhost(newhost)
 		}
-		password, err := prompt.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
-		newhost.Password = password
-		newhost.Port = portFlag
 
 		hosts, err := gethosts(HostsFile)
 		if err != nil {
 			log.Fatal(err)
 		}
-		authhost(newhost)
 		newhost.Password = ""
 		hosts = append(hosts, newhost)
 		err = writehosts(hosts)
@@ -164,13 +171,10 @@ func authhost(host Host) {
 	}
 }
 
-var portFlag int
-
-// var torFlag bool
-
 func init() {
 	rootCmd.AddCommand(addCmd)
 
 	addCmd.Flags().IntVarP(&portFlag, "port", "p", 22, "Port to use for SSH connection")
+	addCmd.Flags().BoolVarP(&dontCopyFlag, "dont-copy", "x", false, "Don't copy public key to remote host")
 	// addCmd.Flags().BoolVarP(&torFlag, "tor", "t", false, "Use tor when connecting to this host")
 }
