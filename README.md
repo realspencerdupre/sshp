@@ -36,7 +36,7 @@ Host (or IP) 127.0.0.1
 Password ********
 ```
 
-Your password is reset after the first connection.
+Your password is not saved, only used for the first connection.
 
 ### Connecting to selected host
 ```
