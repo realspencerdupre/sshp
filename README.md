@@ -9,14 +9,12 @@ To install on Ubuntu 20.04
 
 
 ```
-
 # If you don't already have an ssh key (at ~/.ssh/id_rsa)
 ssh-keygen  # Follow the prompt to create a key.
 
 sudo apt install golang-go
 
 go get github.com/realspencerdupre/sshp
-
 ```
 
 ## Usage
@@ -24,7 +22,6 @@ go get github.com/realspencerdupre/sshp
 ### Adding a host
 ```
 sshp add
-
 ```
 Follow the prompts to add a new host.
 
@@ -45,7 +42,6 @@ sshp
 Will launch a prompt to pick a host, looking something like this:
 ```
 Select Day
-  > MyWebsite (Me)
-    ClientProject (Client1)
-
+  > server 3 (Me)
+    Other server (Client1)
 ```
