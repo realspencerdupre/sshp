@@ -31,8 +31,8 @@ Follow the prompts to add a new host.
 ```
 Username user
 Host (or IP) 127.0.0.1
-✔ Owner: Me█
-✔ Description: server 3█
+✔ Owner: Me
+✔ Description: server 3
 Password ********
 ```
 
