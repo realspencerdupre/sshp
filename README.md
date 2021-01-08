@@ -9,11 +9,13 @@ To install on Ubuntu 20.04
 
 
 ```
-# If you don't already have an ssh key (at ~/.ssh/id_rsa)
-ssh-keygen  # Follow the prompt to create a key.
+# The following line automatically creates an ssh key if you don't already have one
+test ! -e ~/.ssh/id_rsa && ssh-keygen
 
+# Install the go language if you don't already have it
 sudo apt install golang-go
 
+# Install sshp
 go get github.com/realspencerdupre/sshp
 ```
 
