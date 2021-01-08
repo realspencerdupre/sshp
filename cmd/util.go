@@ -83,7 +83,7 @@ func selecthost(hosts []Host) (int, error) {
 		Selected: "> {{ .Desc | red | cyan }}",
 	}
 	prompt := promptui.Select{
-		Label:     "Select Day",
+		Label:     "Select host",
 		Items:     hosts,
 		Templates: templates,
 	}

@@ -9,23 +9,21 @@ To install on Ubuntu 20.04
 
 
 ```
-sudo apt install git golang-go
+
+# If you don't already have an ssh key (at ~/.ssh/id_rsa)
+ssh-keygen  # Follow the prompt to create a key.
+
+sudo apt install golang-go
 
 go get github.com/realspencerdupre/sshp
-
-git clone https://github.com/realspencerdupre/sshp.git
-
-cd sshp
-
-go build
 
 ```
 
 ## Usage
 
-### Adding
+### Adding a host
 ```
-./sshp add
+sshp add
 
 ```
 Follow the prompts to add a new host.
@@ -38,9 +36,11 @@ Host (or IP) 127.0.0.1
 Password ********
 ```
 
-### Connecting
+Your password is reset after the first connection.
+
+### Connecting to selected host
 ```
-./sshp
+sshp
 ```
 Will launch a prompt to pick a host, looking something like this:
 ```
