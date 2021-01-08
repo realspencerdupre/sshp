@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -31,6 +32,26 @@ var HostsFile = filepath.Join(home, ".sshp_hosts.json")
 
 func gethosts(path string) ([]Host, error) {
 	var hosts []Host
+
+	// Touch hosts file with empty array if it doesn't exist
+	_, err := os.Stat(HostsFile)
+	if os.IsNotExist(err) {
+		file, err := os.Create(HostsFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		output, err := json.Marshal(hosts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = file.Write(output)
+		if err != nil {
+			log.Fatal(err)
+		}
+		file.Close()
+	}
+
+	// Read the hosts file
 	data, err := ioutil.ReadFile(HostsFile)
 	if err != nil && strings.HasSuffix(err.Error(), "such file or directory") {
 		return hosts, errors.New("No hosts configured")
