@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -20,7 +21,7 @@ type Host struct {
 	Host      string
 	User      string
 	Desc      string
-	Timestamp int
+	Timestamp int64
 	Owner     string
 	Password  string
 	Port      int
@@ -60,6 +61,11 @@ func gethosts(path string) ([]Host, error) {
 	if err != nil {
 		fmt.Println("error:", err)
 	}
+
+	// Sort the hosts by their timestamp, most recent first
+	sort.Slice(hosts, func(i, j int) bool {
+		return hosts[i].Timestamp > hosts[j].Timestamp
+	})
 	return hosts, nil
 }
 

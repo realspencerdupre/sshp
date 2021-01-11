@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -37,9 +38,17 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		hostIndex, err := selecthost(hosts)
+
+		// host timestamp is set to current time,
+		// so we have the most recently connected host
+		hosts[hostIndex].Timestamp = time.Now().Unix()
+		writehosts(hosts)
+
 		if err != nil {
 			fmt.Println(err.Error())
 		}
+
+		// Full hostname, like user@example.com
 		fullhost := fmt.Sprintf(
 			"%s@%s",
 			hosts[hostIndex].User,

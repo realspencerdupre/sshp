@@ -21,6 +21,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -42,6 +43,7 @@ var addCmd = &cobra.Command{
 		newhost := Host{}
 		newhost.Port = portFlag
 		newhost.Tor = false
+		newhost.Timestamp = time.Now().Unix()
 
 		templates := &promptui.PromptTemplates{
 			Prompt:  "{{ . }} ",
