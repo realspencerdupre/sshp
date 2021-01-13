@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 Spencer Dupre <spencer.dupre@gmail.com>
+Copyright © 2021 Spencer Dupre <spencer.dupre@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ var rootCmd = &cobra.Command{
 			fullhost,
 		}
 
+		// Start the session until the user ends it
 		session := exec.Command(command[0], command[1:]...)
 		session.Stdout = os.Stdout
 		session.Stdin = os.Stdin
@@ -72,20 +73,9 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 }
